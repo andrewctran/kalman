@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
 	        private int gyroCounter = 0;
 	        private int gyroNegaNum = 0;
 	        private long gyroTime = 0;
+	        private float magDegree = 0;
 
 	        private float[] oriDegreeArray = new float[ARRAY_LENGTH]; // For ori
 	        private float oriDegree = 0; // For ori
@@ -57,6 +58,8 @@ public class MainActivity extends Activity {
 	        private float[] matrixR = new float[9];
 	        private float[] matrixI = new float[9];
 	        private float[] matrixVals = new float[3];
+
+	        private float temp = 0;
 	        
 			@Override
 			public void onSensorChanged(SensorEvent event) {
@@ -73,7 +76,9 @@ public class MainActivity extends Activity {
 
 	            		// Log.d("avg", Float.toString(minusAvg));
 
+	            		//
 	            		// low-pass filtering of correctional angle
+	            		//
 	            		float total[] = new float[2];
 	            		for (int i = 0; i < ARRAY_LENGTH; i++)
 	            		{
@@ -82,9 +87,19 @@ public class MainActivity extends Activity {
 	            			total[1] += Math.sin(deg);
 	            		}
 	            		double length = Math.sqrt((total[0] * total[0]) + (total[1] * total[1]));
-	            		minusAvg = (float)Math.atan2(total[1], total[0]);
+	            		Log.d("Length of Correctional Vector", Double.toString(length));
+	            		if (length < 50)
+	            		{
+	            			minusAvg = 0;
+	            		}
+	            		else
+	            		{
+	            			minusAvg = (float)Math.toDegrees(Math.atan2(total[1], total[0]));
+	            			Log.d("Correctional Angle", Float.toString(minusAvg));
+	            			Log.d("MF Angle", Float.toString(magDegree));
+	            		}
 	            	}
-		            MainActivity.this.cam1.setOrientation((float) (180 * gyroDegree / Math.PI) - minusAvg);
+		            MainActivity.this.cam1.setOrientation((float) (temp - minusAvg));
 		        }
 		        
 		        if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
@@ -135,6 +150,7 @@ public class MainActivity extends Activity {
 	            		
 	            	}
 		            MainActivity.this.cam4.setOrientation(-event.values[0] - 90.0F);
+		            temp = (float)(-event.values[0] - 90.0f);
 
 		        }
 		        
